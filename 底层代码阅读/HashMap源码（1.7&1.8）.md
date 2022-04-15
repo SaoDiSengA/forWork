@@ -490,3 +490,116 @@ public boolean containsValue(Object value) {     //o(n^2)
 }
 ```
 
+# JDK1.8.0.231
+
+## 1、常用参数解释
+
+```java
+// 默认初始化数组大小16
+static final int DEFAULT_INITIAL_CAPACITY = 1 << 4;
+
+// 默认最大数组大小(值为：1073741824 = Integer.MAX_VALUE/2 + 1)
+static final int MAXIMUM_CAPACITY = 1 << 30;
+
+// 扩容时的负载因子(真正用来接收负载因子的变量为：final float loadFactor;)
+static final float DEFAULT_LOAD_FACTOR = 0.75f;
+
+// HashMap的键值对数量
+transient int size;
+
+// 下一次要扩容的阀值(该值=capacity * load factor)
+int threshold;
+
+// 记录HashMap结构修改次数(实现fail-fast机制，迭代过程中有修改，直接抛异常)
+transient int modCount;
+
+// 定义个全局的数组
+transient Node<K,V>[] table;
+
+// 定义解决hash碰撞的掩码值
+transient int hashSeed = 0;
+
+// 链表转化为红黑树的阀值，链表长度为大于8
+static final int TREEIFY_THRESHOLD = 8;
+
+// 由红黑树还原为链表的阀值(为啥不是8呢？防止在临界值8的时候进行节点的增删操作，导致频繁转化，影响效率)
+static final int UNTREEIFY_THRESHOLD = 6; 
+
+/**
+* 最小树形化容量阈值
+* (当哈希表中的容量 > 该值时，才允许树形化链表，否则，若桶内元素太多时，则直接扩容，而不是树形化。为了避免进行 * 扩容、树形化选择的冲突，这个值不能小于 4 * TREEIFY_THRESHOLD)
+*/
+static final int **MIN_TREEIFY_CAPACITY** = 64; 
+```
+
+## 2、节点的结构：Node与TreeNode
+
+**Node结构**
+
+类结构信息
+
+```java
+static class Node<K,V> implements Map.Entry<K,V>
+```
+
+基本字段
+
+```java
+final int hash;
+final K key;
+V value; //值是可以改的所以不是final，键是不能改的
+Node<K,V> next; 
+```
+
+重写的方法
+
+```java
+// 基本方法
+public final K getKey() { return key; }
+public final V getValue() { return value; }
+
+// equals方法
+public final boolean equals(Object o) {
+    if (o == this)
+        return true;
+    if (o instanceof Map.Entry) {   //instanceof  左边的对象是不是右边类的实例
+        Map.Entry<?,?> e = (Map.Entry<?,?>)o;
+        if (Objects.equals(key, e.getKey()) &&
+            Objects.equals(value, e.getValue()))  //
+            return true;
+    }
+    return false;
+}
+
+// hashCode方法
+public final int hashCode() {
+    return Objects.hashCode(key) ^ Objects.hashCode(value);
+}
+
+// toString方法
+public final String toString() { 
+    return key + "=" + value; 
+}
+
+```
+
+**TreeNode结构**
+
+```java
+// 类结构
+static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V>
+    
+// 构造方法
+TreeNode(int hash, K key, V val, Node<K,V> next) {
+    super(hash, key, val, next); //调用。父类构造器
+}
+
+// 最终还是调用与Node一样的构造器
+Node(int hash, K key, V value, Node<K,V> next) {
+    this.hash = hash;
+    this.key = key;
+    this.value = value;
+    this.next = next;
+}
+```
+
