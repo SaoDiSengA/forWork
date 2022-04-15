@@ -421,6 +421,7 @@ JDK1.7多线程下扩容可能会导致**死循环**问题，get操作时死循�
 public V get(Object key) {
     if (key == null)
         return getForNullKey();
+    
     Entry<K,V> entry = getEntry(key);
     // 返回对应的Entry节点的value
     return null == entry ? null : entry.getValue();
@@ -434,9 +435,9 @@ private V getForNullKey() {
     // 循环遍历找到key为空的节点值返回
     for (Entry<K,V> e = table[0]; e != null; e = e.next) {
         if (e.key == null)
-            return e.value;
+            return e.value; //空key的value
     }
-    return null;
+    return null; //否则返回空
 }
 
 // 获取非空节点
@@ -457,6 +458,35 @@ final Entry<K,V> getEntry(Object key) {
             return e;
     }
     return null;
+}
+```
+
+## 其他常用方法
+
+```java
+// 通过维护一个size变量获得
+public int size() {
+    return size;
+}
+public boolean isEmpty() {
+    return size == 0;
+}
+public boolean containsKey(Object key) {
+    return getEntry(key) != null;     //o(n)
+}
+public boolean containsValue(Object value) {     //o(n^2)
+    if (value == null)
+        // 返回是否有value为空的节点
+        return containsNullValue();
+    
+    Entry[] tab = table;
+    // 遍历数组
+    for (int i = 0; i < tab.length ; i++)
+        // 遍历槽位下所有的节点
+        for (Entry e = tab[i] ; e != null ; e = e.next)
+            if (value.equals(e.value))
+                return true;
+    return false;
 }
 ```
 
