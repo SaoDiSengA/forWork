@@ -588,7 +588,7 @@ public final String toString() {
 ```java
 // 类结构
 static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V>
-    
+
 // 构造方法
 TreeNode(int hash, K key, V val, Node<K,V> next) {
     super(hash, key, val, next); //调用。父类构造器
@@ -600,6 +600,37 @@ Node(int hash, K key, V value, Node<K,V> next) {
     this.key = key;
     this.value = value;
     this.next = next;
+}
+```
+
+## 3、**构造器方法**
+
+```java
+// 默认构造
+public HashMap() {
+    this.loadFactor = DEFAULT_LOAD_FACTOR; // all other fields defaulted
+}
+
+// 带参构造
+public HashMap(Map<? extends K, ? extends V> m) {
+    this.loadFactor = DEFAULT_LOAD_FACTOR;
+    putMapEntries(m, false);
+}
+// 指定大小的构造器
+public HashMap(int initialCapacity) {
+    //默认16-0.75的初始大小和负载因子
+    this(initialCapacity, DEFAULT_LOAD_FACTOR);
+}
+// 指定构造器
+public HashMap(int initialCapacity, float loadFactor) {
+    if (initialCapacity < 0)
+        throw new IllegalArgumentException("Illegal initial capacity: " + initialCapacity);
+    if (initialCapacity > MAXIMUM_CAPACITY)
+        initialCapacity = MAXIMUM_CAPACITY;//默认最大数组长度就为指定的1<<30(1073741824)
+    if (loadFactor <= 0 || Float.isNaN(loadFactor))
+        throw new IllegalArgumentException("Illegal load factor: " + loadFactor);
+    this.loadFactor = loadFactor; // 设置负载因子
+    this.threshold = tableSizeFor(initialCapacity); // 设置下一个扩容阀值
 }
 ```
 
